@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32929.385
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ITBees.RestfulApiControllers", "ITBees.RestfulApiControllers\ITBees.RestfulApiControllers.csproj", "{89B3625F-990D-4A67-B1D0-54D6961103D4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ITBees.RestfulApiControllers.UnitTests", "ITBees.RestfulApiControllers.UnitTests\ITBees.RestfulApiControllers.UnitTests.csproj", "{5E48403A-E6D7-4AA8-B1D2-C96AB4F62A88}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{89B3625F-990D-4A67-B1D0-54D6961103D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{89B3625F-990D-4A67-B1D0-54D6961103D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{89B3625F-990D-4A67-B1D0-54D6961103D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{89B3625F-990D-4A67-B1D0-54D6961103D4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5E48403A-E6D7-4AA8-B1D2-C96AB4F62A88}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E48403A-E6D7-4AA8-B1D2-C96AB4F62A88}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E48403A-E6D7-4AA8-B1D2-C96AB4F62A88}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E48403A-E6D7-4AA8-B1D2-C96AB4F62A88}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1F7917E5-FFCE-44F3-B075-A81ED037B6B1}
+	EndGlobalSection
+EndGlobal
