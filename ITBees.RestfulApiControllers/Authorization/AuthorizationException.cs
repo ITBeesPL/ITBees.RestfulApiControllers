@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace RestfullApi.Authorization
+namespace ITBees.RestfulApiControllers.Authorization
 {
     public class AuthorizationException : Exception
     {

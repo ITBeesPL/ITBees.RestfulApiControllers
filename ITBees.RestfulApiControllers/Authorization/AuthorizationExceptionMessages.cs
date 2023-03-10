@@ -1,4 +1,4 @@
-﻿namespace RestfullApi.Authorization
+﻿namespace ITBees.RestfulApiControllers.Authorization
 {
     public enum AuthorizationExceptionMessages
     {
