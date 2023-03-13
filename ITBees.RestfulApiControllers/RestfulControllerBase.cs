@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Linq;
 using ITBees.RestfulApiControllers.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
 
 namespace ITBees.RestfulApiControllers
@@ -19,6 +21,15 @@ namespace ITBees.RestfulApiControllers
         protected IActionResult CreateBaseErrorResponse(string[] errorMessages, object inputModel)
         {
             return CreateBaseErrorResponse(String.Join(",", errorMessages), inputModel);
+        }
+
+        protected IActionResult CreateBaseErrorResponse(ModelStateDictionary errorMessage, object inputModel)
+        {
+            var errors = ModelState.Values.Select(x => x.Errors).ToList();
+            var allErros = string.Join("; ", errors);
+
+            _logger.LogError(allErros, inputModel);
+            return new BadRequestModel(new string[] { allErros }, inputModel);
         }
 
         protected IActionResult CreateBaseErrorResponse(string errorMessage, object inputModel)
