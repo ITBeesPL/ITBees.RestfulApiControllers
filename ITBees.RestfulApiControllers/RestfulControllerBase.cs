@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using ITBees.RestfulApiControllers.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
@@ -48,6 +49,31 @@ namespace ITBees.RestfulApiControllers
             return new BadRequestModel(new string[] { e.Message }, inputModel);
         }
 
+        public string GetClientIp(HttpContext context)
+        {
+            var remoteIpAddress = context.Connection.RemoteIpAddress;
 
+            // Check if the request is forwarded from a proxy
+            if (context.Request.Headers.ContainsKey("X-Forwarded-For"))
+            {
+                var forwardedHeader = context.Request.Headers["X-Forwarded-For"].ToString();
+                if (!string.IsNullOrEmpty(forwardedHeader))
+                {
+                    return forwardedHeader.Split(',')[0].Trim();
+                }
+            }
+
+            if (remoteIpAddress == null)
+            {
+                return "Unknown";
+            }
+
+            if (remoteIpAddress.IsIPv4MappedToIPv6)
+            {
+                return remoteIpAddress.MapToIPv4().ToString();
+            }
+
+            return remoteIpAddress.ToString();
+        }
     }
 }
