@@ -49,7 +49,7 @@ namespace ITBees.RestfulApiControllers
             return new BadRequestModel(new string[] { e.Message }, inputModel);
         }
 
-        public string GetClientIp(HttpContext context)
+        protected string GetClientIp(HttpContext context)
         {
             var remoteIpAddress = context.Connection.RemoteIpAddress;
 
