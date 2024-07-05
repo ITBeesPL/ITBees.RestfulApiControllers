@@ -49,14 +49,14 @@ namespace ITBees.RestfulApiControllers
             return new BadRequestModel(new string[] { e.Message }, inputModel);
         }
 
-        protected string GetClientIp(HttpContext context)
+        protected string GetClientIp()
         {
-            var remoteIpAddress = context.Connection.RemoteIpAddress;
+            var remoteIpAddress = HttpContext.Connection.RemoteIpAddress;
 
             // Check if the request is forwarded from a proxy
-            if (context.Request.Headers.ContainsKey("X-Forwarded-For"))
+            if (HttpContext.Request.Headers.ContainsKey("X-Forwarded-For"))
             {
-                var forwardedHeader = context.Request.Headers["X-Forwarded-For"].ToString();
+                var forwardedHeader = HttpContext.Request.Headers["X-Forwarded-For"].ToString();
                 if (!string.IsNullOrEmpty(forwardedHeader))
                 {
                     return forwardedHeader.Split(',')[0].Trim();
