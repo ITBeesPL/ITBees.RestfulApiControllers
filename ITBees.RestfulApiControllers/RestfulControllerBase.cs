@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using ITBees.RestfulApiControllers.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -74,6 +75,41 @@ namespace ITBees.RestfulApiControllers
             }
 
             return remoteIpAddress.ToString();
+        }
+
+        /// <summary>
+        /// Returns ok result, but if there will be an error, it will be logged. Authorization error will return 401, not found 404, bad request 500
+        /// </summary>
+        /// <param name="func"></param>
+        /// <param name="inputModel"></param>
+        /// <returns></returns>
+        protected IActionResult ReturnOkResult(Func<object> func, params object[] inputModel)
+        {
+            try
+            {
+                var result = func();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                var errors = ModelState.Values.Select(x => x.Errors).ToList();
+                var allErros = string.Join("; ", errors);
+
+                _logger.LogError(allErros, inputModel.FirstOrDefault());
+                _logger.LogError(ex.Message);
+
+                if (ex.GetType() == typeof(AuthorizationException))
+                {
+                    return Unauthorized();
+                }
+
+                if (ex.GetType() == typeof(NotFoundResult))
+                {
+                    return StatusCode(404, new { message = ex.Message });
+                }
+
+                return StatusCode(500, new { message = ex.Message });
+            }
         }
     }
 }
