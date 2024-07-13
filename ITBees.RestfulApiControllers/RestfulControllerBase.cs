@@ -129,6 +129,11 @@ namespace ITBees.RestfulApiControllers
                 return Unauthorized(ex.Message);
             }
 
+            if (ex is UnauthorizedAccessException)
+            {
+                return Unauthorized(ex.Message);
+            }
+
             if (ex is ResultNotFoundException)
             {
                 return StatusCode(404, new { message = ex.Message });
