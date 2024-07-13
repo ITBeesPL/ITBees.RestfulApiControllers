@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading;
 using ITBees.RestfulApiControllers.Authorization;
+using ITBees.RestfulApiControllers.Exceptions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -92,24 +93,48 @@ namespace ITBees.RestfulApiControllers
             }
             catch (Exception ex)
             {
-                var errors = ModelState.Values.Select(x => x.Errors).ToList();
-                var allErros = string.Join("; ", errors);
-
-                _logger.LogError(allErros, inputModel.FirstOrDefault());
-                _logger.LogError(ex.Message);
-
-                if (ex.GetType() == typeof(AuthorizationException))
-                {
-                    return Unauthorized();
-                }
-
-                if (ex.GetType() == typeof(NotFoundResult))
-                {
-                    return StatusCode(404, new { message = ex.Message });
-                }
-
-                return StatusCode(500, new { message = ex.Message });
+                return HandleException(ex, inputModel);
             }
+        }
+
+        protected IActionResult ReturnOkResult(Action action, params object[] inputModel)
+        {
+            try
+            {
+                action();
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, inputModel);
+            }
+        }
+
+        /// <summary>
+        /// Returns ok result, but if there will be an error, it will be logged. Authorization error will return 401, not found 404, bad request 500
+        /// </summary>
+        /// <param name="func"></param>
+        /// <param name="inputModel"></param>
+        /// <returns></returns>
+        private IActionResult HandleException(Exception ex, object[] inputModel)
+        {
+            var errors = ModelState.Values.SelectMany(x => x.Errors).Select(e => e.ErrorMessage).ToList();
+            var allErrors = string.Join("; ", errors);
+
+            _logger.LogError(allErrors, inputModel.FirstOrDefault());
+            _logger.LogError(ex.Message);
+
+            if (ex is AuthorizationException)
+            {
+                return Unauthorized(ex.Message);
+            }
+
+            if (ex is ResultNotFoundException)
+            {
+                return StatusCode(404, new { message = ex.Message });
+            }
+
+            return StatusCode(500, new { message = ex.Message });
         }
     }
 }
