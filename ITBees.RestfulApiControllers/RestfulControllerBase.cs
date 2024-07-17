@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Threading;
 using ITBees.RestfulApiControllers.Authorization;
 using ITBees.RestfulApiControllers.Exceptions;
 using Microsoft.AspNetCore.Http;
@@ -132,6 +131,11 @@ namespace ITBees.RestfulApiControllers
             if (ex is UnauthorizedAccessException)
             {
                 return Unauthorized(ex.Message);
+            }
+
+            if (ex is Authorization403ForbiddenException)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, ex.Message);
             }
 
             if (ex is ResultNotFoundException)
