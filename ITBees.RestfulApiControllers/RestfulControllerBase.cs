@@ -143,6 +143,11 @@ namespace ITBees.RestfulApiControllers
                 return StatusCode(404, new { message = ex.Message });
             }
 
+            if (ex is ArgumentException)
+            {
+                return StatusCode(400, new { message = ex.Message });
+            }
+
             return StatusCode(500, new { message = ex.Message });
         }
     }
