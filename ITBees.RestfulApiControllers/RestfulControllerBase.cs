@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using ITBees.RestfulApiControllers.Authorization;
 using ITBees.RestfulApiControllers.Exceptions;
 using Microsoft.AspNetCore.Http;
@@ -76,6 +77,32 @@ namespace ITBees.RestfulApiControllers
 
             return remoteIpAddress.ToString();
         }
+        protected async Task<IActionResult> ReturnOkResult(Func<Task<object>> func, params object[] inputModel)
+        {
+            try
+            {
+                var result = await func();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, inputModel);
+            }
+        }
+
+        protected async Task<IActionResult> ReturnOkResult(Func<Task> action, params object[] inputModel)
+        {
+            try
+            {
+                await action();
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, inputModel);
+            }
+        }
+
 
         /// <summary>
         /// Returns ok result, but if there will be an error, it will be logged. Authorization error will return 401, not found 404, bad request 500
