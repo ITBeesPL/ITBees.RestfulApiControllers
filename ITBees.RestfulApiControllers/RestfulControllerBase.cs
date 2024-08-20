@@ -80,7 +80,7 @@ namespace ITBees.RestfulApiControllers
             return remoteIpAddress.ToString();
         }
 
-        protected async Task<IActionResult> ReturnOkResult(Func<Task<object>> func, params object[] inputModel)
+        protected async Task<IActionResult> ReturnOkResultAsync(Func<Task<object>> func, params object[] inputModel)
         {
             try
             {
@@ -93,7 +93,7 @@ namespace ITBees.RestfulApiControllers
             }
         }
 
-        protected async Task<IActionResult> ReturnOkResult(Func<Task> action, params object[] inputModel)
+        protected async Task<IActionResult> ReturnOkResultAsync(Func<Task> action, params object[] inputModel)
         {
             try
             {
