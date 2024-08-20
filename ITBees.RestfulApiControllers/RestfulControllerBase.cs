@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ITBees.RestfulApiControllers.Authorization;
 using ITBees.RestfulApiControllers.Exceptions;
+using ITBees.RestfulApiControllers.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -40,6 +41,7 @@ namespace ITBees.RestfulApiControllers
             _logger.LogError(errorMessage, inputModel);
             return new BadRequestModel(new string[] { errorMessage }, inputModel);
         }
+
         protected BadRequestObjectResult CreateBaseErrorResponse(Exception e, object inputModel)
         {
             _logger.LogError(e.Message, inputModel);
@@ -77,6 +79,7 @@ namespace ITBees.RestfulApiControllers
 
             return remoteIpAddress.ToString();
         }
+
         protected async Task<IActionResult> ReturnOkResult(Func<Task<object>> func, params object[] inputModel)
         {
             try
@@ -100,6 +103,7 @@ namespace ITBees.RestfulApiControllers
             catch (Exception ex)
             {
                 return HandleException(ex, inputModel);
+
             }
         }
 
@@ -152,30 +156,31 @@ namespace ITBees.RestfulApiControllers
 
             if (ex is AuthorizationException)
             {
-                return Unauthorized(ex.Message);
+                return Unauthorized(new FasApiErrorVm(ex.Message, 401, ""));
             }
 
             if (ex is UnauthorizedAccessException)
             {
-                return Unauthorized(ex.Message);
+                return Unauthorized(new FasApiErrorVm(ex.Message, 401, ""));
             }
 
             if (ex is Authorization403ForbiddenException)
             {
-                return StatusCode(StatusCodes.Status403Forbidden, ex.Message);
+                return StatusCode(StatusCodes.Status403Forbidden,
+                    new FasApiErrorVm(ex.Message, StatusCodes.Status403Forbidden, ""));
             }
 
             if (ex is ResultNotFoundException)
             {
-                return StatusCode(404, new { message = ex.Message });
-            }
+                return StatusCode(404, new FasApiErrorVm(ex.Message,404,""));
+            };
 
             if (ex is ArgumentException)
             {
-                return StatusCode(400, new { message = ex.Message });
+                return StatusCode(400, new FasApiErrorVm(ex.Message, 400, ""));
             }
 
-            return StatusCode(500, new { message = ex.Message });
+            return StatusCode(500, new FasApiErrorVm(ex.Message, 500, ""));
         }
     }
 }
