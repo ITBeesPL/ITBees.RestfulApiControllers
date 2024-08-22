@@ -154,6 +154,12 @@ namespace ITBees.RestfulApiControllers
             _logger.LogError(allErrors, inputModel.FirstOrDefault());
             _logger.LogError(ex.Message);
 
+            if (ex is FasApiErrorException)
+            {
+                var fasApiErrorVm = (ex as FasApiErrorException).FasApiErrorVm;
+                return StatusCode(fasApiErrorVm.StatusCode, fasApiErrorVm);
+            }
+
             if (ex is AuthorizationException)
             {
                 return Unauthorized(new FasApiErrorVm(ex.Message, 401, ""));
