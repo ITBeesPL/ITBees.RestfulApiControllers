@@ -5,7 +5,7 @@ namespace ITBees.RestfulApiControllers.Exceptions;
 
 public class FasApiErrorException : Exception
 {
-    public FasApiErrorException(string message, FasApiErrorVm fasApiErrorVm) : base(message)
+    public FasApiErrorException(FasApiErrorVm fasApiErrorVm) : base(fasApiErrorVm.Message)
     {
         FasApiErrorVm = fasApiErrorVm;
     }
