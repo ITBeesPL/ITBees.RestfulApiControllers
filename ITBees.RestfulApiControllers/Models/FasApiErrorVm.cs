@@ -19,6 +19,12 @@ public class FasApiErrorVm
         Message = message ?? string.Empty;
         ErrorKey = errorKey ?? string.Empty;
     }
+    
+    public FasApiErrorVm(string message, int statusCode)
+    {
+        StatusCode = statusCode;
+        Message = message ?? string.Empty;
+    }
 
     public string Message { get; set; }
 }

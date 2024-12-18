@@ -10,5 +10,15 @@ public class FasApiErrorException : Exception
         FasApiErrorVm = fasApiErrorVm;
     }
 
+    public FasApiErrorException(string message, int statusCode) : base(message)
+    {
+        FasApiErrorVm = new FasApiErrorVm(message, statusCode);
+    }
+    
+    public FasApiErrorException(string message, int statusCode, string errorKey) : base(message)
+    {
+        FasApiErrorVm = new FasApiErrorVm(message, statusCode, errorKey);
+    }
+
     public FasApiErrorVm FasApiErrorVm { get; }
 }
