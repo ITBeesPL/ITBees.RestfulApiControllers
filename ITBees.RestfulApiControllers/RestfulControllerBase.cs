@@ -152,7 +152,7 @@ namespace ITBees.RestfulApiControllers
             var allErrors = string.Join("; ", errors);
 
             _logger.LogError(allErrors, inputModel.FirstOrDefault());
-            _logger.LogError(ex.Message);
+            _logger.LogError("Handle excpetion in controller base : " + ex.Message, ex);
 
             if (ex is FasApiErrorException)
             {
