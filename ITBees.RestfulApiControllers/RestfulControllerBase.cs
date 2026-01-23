@@ -140,17 +140,34 @@ namespace ITBees.RestfulApiControllers
             }
         }
 
-        /// <summary>
-        /// Returns ok result, but if there will be an error, it will be logged. Authorization error will return 401, not found 404, bad request 500
-        /// </summary>
-        /// <param name="func"></param>
-        /// <param name="inputModel"></param>
-        /// <returns></returns>
+        private string GetRequestDetails()
+        {
+            var request = HttpContext.Request;
+            var details = $"Request: {request.Method} {request.Scheme}://{request.Host}{request.Path}{request.QueryString}\n";
+            details += $"ClientIP: {GetClientIp()}\n";
+            details += $"Headers: {string.Join(", ", request.Headers.Select(h => $"{h.Key}={h.Value}"))}\n";
+            
+            if (request.ContentLength > 0 && request.ContentLength < 10000)
+            {
+                request.Body.Position = 0;
+                using var reader = new System.IO.StreamReader(request.Body, leaveOpen: true);
+                var body = reader.ReadToEndAsync().Result;
+                request.Body.Position = 0;
+                details += $"Body: {body}\n";
+            }
+            
+            return details;
+        }
+
         private IActionResult HandleException(Exception ex, object[] inputModel)
         {
             var errors = ModelState.Values.SelectMany(x => x.Errors).Select(e => e.ErrorMessage).ToList();
             var allErrors = string.Join("; ", errors);
 
+            var requestDetails = GetRequestDetails();
+            
+            _logger.LogError("Error handled in controller type : " + this.GetType());
+            _logger.LogError(requestDetails);
             _logger.LogError(allErrors, inputModel.FirstOrDefault());
             _logger.LogError("Handle excpetion in controller base : " + ex.Message, ex);
 
