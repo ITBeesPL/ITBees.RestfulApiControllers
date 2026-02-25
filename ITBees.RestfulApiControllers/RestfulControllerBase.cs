@@ -161,49 +161,69 @@ namespace ITBees.RestfulApiControllers
 
         private IActionResult HandleException(Exception ex, object[] inputModel)
         {
-            var errors = ModelState.Values.SelectMany(x => x.Errors).Select(e => e.ErrorMessage).ToList();
-            var allErrors = string.Join("; ", errors);
-
-            var requestDetails = GetRequestDetails();
-            
-            _logger.LogError("Error handled in controller type : " + this.GetType());
-            _logger.LogError(requestDetails);
-            _logger.LogError(allErrors, inputModel.FirstOrDefault());
-            _logger.LogError("Handle excpetion in controller base : " + ex.Message, ex);
-
-            if (ex is FasApiErrorException)
+            Exception realEx = ex;
+            while ((realEx is System.AggregateException || realEx is System.Reflection.TargetInvocationException) && realEx.InnerException != null)
             {
-                var fasApiErrorVm = (ex as FasApiErrorException).FasApiErrorVm;
+                realEx = realEx.InnerException;
+            }
+
+            try
+            {
+                var errors = ModelState.Values.SelectMany(x => x.Errors).Select(e => e.ErrorMessage).ToList();
+                var allErrors = string.Join("; ", errors);
+
+                var requestDetails = GetRequestDetails();
+
+                _logger.LogError("Error handled in controller type : " + this.GetType());
+                _logger.LogError(requestDetails);
+                _logger.LogError(allErrors, inputModel?.FirstOrDefault());
+                _logger.LogError("Handle exception in controller base : " + realEx.Message, realEx);
+            }
+            catch (Exception loggingEx)
+            {
+                try
+                {
+                    _logger.LogError("Failed to log exception details: {0}", loggingEx.Message);
+                }
+                catch
+                {
+                    //ignore exception
+                }
+            }
+
+            if (realEx is FasApiErrorException)
+            {
+                var fasApiErrorVm = (realEx as FasApiErrorException).FasApiErrorVm;
                 return StatusCode(fasApiErrorVm.StatusCode, fasApiErrorVm);
             }
 
-            if (ex is AuthorizationException)
+            if (realEx is AuthorizationException)
             {
-                return Unauthorized(new FasApiErrorVm(ex.Message, 401, ""));
+                return Unauthorized(new FasApiErrorVm(realEx.Message, 401, ""));
             }
 
-            if (ex is UnauthorizedAccessException)
+            if (realEx is UnauthorizedAccessException)
             {
-                return Unauthorized(new FasApiErrorVm(ex.Message, 401, ""));
+                return Unauthorized(new FasApiErrorVm(realEx.Message, 401, ""));
             }
 
-            if (ex is Authorization403ForbiddenException)
+            if (realEx is Authorization403ForbiddenException)
             {
                 return StatusCode(StatusCodes.Status403Forbidden,
-                    new FasApiErrorVm(ex.Message, StatusCodes.Status403Forbidden, ""));
+                    new FasApiErrorVm(realEx.Message, StatusCodes.Status403Forbidden, ""));
             }
 
-            if (ex is ResultNotFoundException)
+            if (realEx is ResultNotFoundException)
             {
-                return StatusCode(404, new FasApiErrorVm(ex.Message,404,""));
+                return StatusCode(404, new FasApiErrorVm(realEx.Message,404,""));
             };
 
-            if (ex is ArgumentException)
+            if (realEx is ArgumentException)
             {
-                return StatusCode(400, new FasApiErrorVm(ex.Message, 400, ""));
+                return StatusCode(400, new FasApiErrorVm(realEx.Message, 400, ""));
             }
 
-            return StatusCode(500, new FasApiErrorVm(ex.Message, 500, ""));
+            return StatusCode(500, new FasApiErrorVm(realEx.Message, 500, ""));
         }
     }
 }
