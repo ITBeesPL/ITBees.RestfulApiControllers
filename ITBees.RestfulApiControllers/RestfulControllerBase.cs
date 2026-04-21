@@ -174,30 +174,45 @@ namespace ITBees.RestfulApiControllers
                 realEx = realEx.InnerException;
             }
 
-            _logger.LogError(realEx, "Handle exception in controller base ({ControllerType}): {Message}", this.GetType(), realEx.Message);
+            var isExpectedClientError = realEx is UnauthorizedAccessException
+                                        || realEx is AuthorizationException
+                                        || realEx is Authorization403ForbiddenException
+                                        || realEx is ResultNotFoundException
+                                        || realEx is ArgumentException
+                                        || realEx is FasApiErrorException;
 
-            try
+            if (isExpectedClientError)
             {
-                var errors = ModelState.Values.SelectMany(x => x.Errors).Select(e => e.ErrorMessage).ToList();
-                var allErrors = string.Join("; ", errors);
-
-                var requestDetails = GetRequestDetails();
-
-                _logger.LogError(requestDetails);
-                if (!string.IsNullOrWhiteSpace(allErrors))
-                {
-                    _logger.LogError(allErrors, inputModel?.FirstOrDefault());
-                }
+                _logger.LogWarning("{ControllerType} returning client error ({ExceptionType}): {Message}",
+                    this.GetType().Name, realEx.GetType().Name, realEx.Message);
             }
-            catch (Exception loggingEx)
+            else
             {
+                _logger.LogError(realEx, "Handle exception in controller base ({ControllerType}): {Message}", this.GetType(), realEx.Message);
+
                 try
                 {
-                    _logger.LogError("Failed to log request details in {ControllerType}: {Message}", this.GetType(), loggingEx.Message);
+                    var errors = ModelState.Values.SelectMany(x => x.Errors).Select(e => e.ErrorMessage).ToList();
+                    var allErrors = string.Join("; ", errors);
+
+                    var requestDetails = GetRequestDetails();
+
+                    _logger.LogError(requestDetails);
+                    if (!string.IsNullOrWhiteSpace(allErrors))
+                    {
+                        _logger.LogError(allErrors, inputModel?.FirstOrDefault());
+                    }
                 }
-                catch
+                catch (Exception loggingEx)
                 {
-                    //ignore exception
+                    try
+                    {
+                        _logger.LogError("Failed to log request details in {ControllerType}: {Message}", this.GetType(), loggingEx.Message);
+                    }
+                    catch
+                    {
+                        //ignore exception
+                    }
                 }
             }
 
