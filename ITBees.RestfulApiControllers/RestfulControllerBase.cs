@@ -146,16 +146,23 @@ namespace ITBees.RestfulApiControllers
             var details = $"Request: {request.Method} {request.Scheme}://{request.Host}{request.Path}{request.QueryString}\n";
             details += $"ClientIP: {GetClientIp()}\n";
             details += $"Headers: {string.Join(", ", request.Headers.Select(h => $"{h.Key}={h.Value}"))}\n";
-            
-            if (request.ContentLength > 0 && request.ContentLength < 10000)
+
+            if (request.Body.CanSeek && request.ContentLength > 0 && request.ContentLength < 10000)
             {
-                request.Body.Position = 0;
-                using var reader = new System.IO.StreamReader(request.Body, leaveOpen: true);
-                var body = reader.ReadToEndAsync().Result;
-                request.Body.Position = 0;
-                details += $"Body: {body}\n";
+                try
+                {
+                    request.Body.Position = 0;
+                    using var reader = new System.IO.StreamReader(request.Body, leaveOpen: true);
+                    var body = reader.ReadToEndAsync().Result;
+                    request.Body.Position = 0;
+                    details += $"Body: {body}\n";
+                }
+                catch (Exception bodyEx)
+                {
+                    details += $"Body: <unavailable: {bodyEx.GetType().Name}: {bodyEx.Message}>\n";
+                }
             }
-            
+
             return details;
         }
 
@@ -167,6 +174,8 @@ namespace ITBees.RestfulApiControllers
                 realEx = realEx.InnerException;
             }
 
+            _logger.LogError(realEx, "Handle exception in controller base ({ControllerType}): {Message}", this.GetType(), realEx.Message);
+
             try
             {
                 var errors = ModelState.Values.SelectMany(x => x.Errors).Select(e => e.ErrorMessage).ToList();
@@ -174,16 +183,17 @@ namespace ITBees.RestfulApiControllers
 
                 var requestDetails = GetRequestDetails();
 
-                _logger.LogError("Error handled in controller type : " + this.GetType());
                 _logger.LogError(requestDetails);
-                _logger.LogError(allErrors, inputModel?.FirstOrDefault());
-                _logger.LogError("Handle exception in controller base : " + realEx.Message, realEx);
+                if (!string.IsNullOrWhiteSpace(allErrors))
+                {
+                    _logger.LogError(allErrors, inputModel?.FirstOrDefault());
+                }
             }
             catch (Exception loggingEx)
             {
                 try
                 {
-                    _logger.LogError("Failed to log exception details: {0}", loggingEx.Message);
+                    _logger.LogError("Failed to log request details in {ControllerType}: {Message}", this.GetType(), loggingEx.Message);
                 }
                 catch
                 {
