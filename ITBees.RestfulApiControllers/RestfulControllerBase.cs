@@ -183,8 +183,16 @@ namespace ITBees.RestfulApiControllers
 
             if (isExpectedClientError)
             {
-                _logger.LogWarning("{ControllerType} returning client error ({ExceptionType}): {Message}",
-                    this.GetType().Name, realEx.GetType().Name, realEx.Message);
+                if (realEx is FasApiErrorException fasEx && fasEx.FasApiErrorVm.StatusCode < 500)
+                {
+                    _logger.LogInformation("{ControllerType} returning controlled {StatusCode} response: {Message}",
+                        this.GetType().Name, fasEx.FasApiErrorVm.StatusCode, realEx.Message);
+                }
+                else
+                {
+                    _logger.LogWarning("{ControllerType} returning client error ({ExceptionType}): {Message}",
+                        this.GetType().Name, realEx.GetType().Name, realEx.Message);
+                }
             }
             else
             {
